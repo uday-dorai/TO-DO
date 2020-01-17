@@ -1,44 +1,41 @@
-let itemlist = document.getElementById('item');
-// let itemlist = document.getElementsByClassName('li-list');
+let todoList = document.getElementById('item');
+// let todoList = document.getElementsByClassName('li-list');
 let counter=0;
 let list =[];
 
-document.getElementById('form_tag').addEventListener('submit',additem); 
-getList();    
-DOMlist();
+document.getElementById('form_tag').addEventListener('submit',addTodoItem); 
+getTodoList();    
+refreshDOM();
 
-function additem(e){
+function addTodoItem(e){
     e.preventDefault();
-    let newitem = document.getElementById('entry').value;
+    let newTodoItem = document.getElementById('entry').value;
     let count =0;
-    console.log(newitem);
+    // check dublicate item
     for(let content of list){
         console.log(content.text);
-        if(content.text != newitem){
+        if(content.text != newTodoItem){
             count++;
-            // console.log(count);
         }
     }
-    // console.log(list.length);
-    if(newitem != "" && count == list.length){
-        let newobj = {text:newitem,status:false};
+    // if item is not dublicate and is not empty
+    if(newTodoItem != "" && count == list.length){
+        let newobj = {text:newTodoItem,status:false};
         list.push(newobj);
         document.getElementById('entry').value=null;
-        update();
-        DOMlist();
+        updateDOM();
+        refreshDOM();
         
     }
 }
 
 
-// storing 
-function update(){
-    // const list =JSON.parse(localStorage.getItem("list"));
+// Storing data to local Storage
+function updateDOM(){
     localStorage.setItem('list',JSON.stringify(list));
-    // DOMlist();
 }
 
-function getList(){
+function getTodoList(){
     list =JSON.parse(localStorage.getItem("list"));
     if(!list){
         list=[];
@@ -46,69 +43,63 @@ function getList(){
 }
 
 
-// delete the list
-// let itemlist = document.getElementById('item');
-itemlist.addEventListener('click', removeitem);
+// delete the from todolist
+todoList.addEventListener('click', deleteTodoItem);
 
-function removeitem(e){
+function deleteTodoItem(e){
     // e.preventDefault();
     if(e.target.classList.contains('del')){
-        // itemlist.removeChild(e.target.parentElement);
+        // todoList.removeChild(e.target.parentElement);
         let remove =e.target.parentElement;
         let index = remove.getAttribute("Position");
         list.splice(index,1);
-        update();
-        DOMlist();
+        updateDOM();
+        refreshDOM();
     }
 }
     
- // // strike the list
-itemlist.addEventListener('click',check)
+// line-through the todoitem if it is checked
+todoList.addEventListener('click',check)
 function check(e){
     console.log(e);
     e.preventDefault();
-    // if(e.target.type != 'checkbox'){ return;}
-    //     e.target.parentElement.classList.toggle('strike');
     let checkitem = e.target.parentElement;
     let index= checkitem.getAttribute('position');
     list[index].status = e.target.checked;
-    // console.log()
-    update();
-    DOMlist();
+    updateDOM();
+    refreshDOM();
 }
     
-
-function DOMlist(){
-    while (itemlist.hasChildNodes()){
-        itemlist.lastChild.remove();
+// Refreshing the DOM
+function refreshDOM(){
+    while (todoList.hasChildNodes()){
+        todoList.lastChild.remove();
     }
     for(let listContent of list){
-        // console.log(listContent.text);
         if(listContent.text){
         let li = document.createElement('li');
         li.draggable= true;
         li.className = 'li-list';
-        // console.log(list.indexOf(listContent));
         li.setAttribute('position',list.indexOf(listContent));
-        // console.log(li.getAttribute('position'));
+        
+        // adding checkbox 
+        let todoCheckBox=document.createElement('input')
+        todoCheckBox.type="checkbox";
+        todoCheckBox.checked= listContent.status;
+        todoCheckBox.className='check-box';
+        li.appendChild(todoCheckBox);
 
-        let checkk=document.createElement('input')
-        checkk.type="checkbox";
-        checkk.checked= listContent.status;
-        checkk.className='check-box';
-        li.appendChild(checkk);
-
-        // adding item to list
+        // adding item 
         li.appendChild(document.createTextNode(listContent.text));
-        itemlist.appendChild(li);
+        todoList.appendChild(li);
         document.getElementById('entry').value="";
 
-        // adding delete button to list
+        // adding delete button 
         let deletebtn = document.createElement('button');
         deletebtn.appendChild(document.createTextNode('delete'));
         deletebtn.className='del';
         li.appendChild(deletebtn);
-        itemlist.appendChild(li);
+        todoList.appendChild(li);
             if(listContent.status === true){
                 li.style.textDecoration = 'line-through';
                 li.style.color='red'
@@ -124,12 +115,6 @@ function DOMlist(){
     }
 }
 
-// const dragg = document.querySelector(".item_list");
-
-// dragg.addEventListener('dragstart',dragStart);
-// dragg.addEventListener('dragend',dragEnd);
-// dragg.addEventListener('dragover',dragOver);
-
 let position_start;
 let position_over;
 let position_drop;
@@ -144,16 +129,14 @@ function dragStart(e){
 function dragOver(e){
     e.preventDefault();
     // console.log(e.target.attributes.position);
-    position_over = e.target.getAttribute('position');
-    // console.log(position_over.value);
-    
+    position_over = e.target.getAttribute('position'); 
 }
 
 function dragEnd(e){
     const startcontent = list.splice(position_start,1);
     // console.log(startcontent);  
     list.splice(position_over,0,startcontent[0]);
-    update();
-    DOMlist();    
+    updateDOM();
+    refreshDOM();    
 }
 
